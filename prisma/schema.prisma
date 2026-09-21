@@ -1,0 +1,266 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+//ENUMS
+
+enum SiteCode{
+  HA_NOI
+  THAI_NGUYEN
+  HO_CHI_MINH
+}
+
+enum Role{
+  NGUOI_TAO
+  TRUONG_PHONG
+  BGD
+  KT_TONG_HOP
+  KT_TRUONG
+  KT_THANH_TOAN
+  NGUOI_XEM
+  ADMIN
+}
+
+enum RequestStatus{
+  NHAP
+  KHOI_TAO
+  TRUONG_PHONG_DUYET
+  BGD_DUYET
+  KT_XU_LY
+  DA_CK_CHO_BO_SUNG
+  DA_THANH_TOAN
+  DA_IN_PDF
+  BGD_TU_CHOI
+}
+
+enum Currency{
+  VND
+  USD
+}
+
+enum AttachmentType{
+  CONFIRM_IMAGE_1
+  CONFIRM_IMAGE_2
+  CONTRACT_IMAGE
+  FREE
+}
+
+enum ChangeLogAction{
+  CREATED
+  SUBMITTED
+  STATUS_CHANGED
+  FILE_UPLOADED
+  COMMENTED
+}
+
+enum NotificationType{
+  ASSIGNED
+  APPROVED
+  REJECTED
+  SEND_TO_ACCOUNTING
+  MISSING_DOCS
+  PAID
+}
+
+// Models
+
+model Site{
+  id          String     @id  @default(cuid())
+  code        SiteCode       @unique
+  name        String
+  userRoles   UserSiteRole[]
+  requests    PaymentRequest[]
+
+  @@map("sites")
+}
+
+model User{
+  id                      String        @id @default(cuid())
+  name                    String    
+  email                   String        @unique
+  passwordHash            String    
+  avatarUrl               String?   
+  isActive                Boolean       @default(true)
+
+  lastSiteSelected        String?   
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  siteRoles               UserSiteRole[]
+  createdRequests         PaymentRequest[]  @relation("Creator")
+  approvingRequests       PaymentRequest[]  @relation("Approver")
+  watching                RequestWatcher[]
+  attachments             Attachment[]
+  comments                Comment[]
+  changeLogs              ChangeLog[]
+  notifications           Notification[]
+
+
+  @@map("users")
+
+}
+
+model UserSiteRole{
+  id        String    @id @default(cuid())
+  userId    String
+  siteId    String
+  role      Role
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site    Site    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, siteId, role])
+  @@index([siteId, role])
+  @@map("user_site_roles")
+}
+
+model PaymentRequest{
+  id    String  @id @default(cuid())
+  code  String? @unique
+  siteId String
+  site  Site    @relation(fields: [siteId], references: [id])
+  title String
+  amount Decimal  @db.Decimal(18,2)
+  currency  Currency
+  paymentContent String  @db.Text
+  bankName  String
+  bankAccount  String
+  recipientName String
+  dueDate   DateTime
+
+  creatorId   String
+  creator     User    @relation("Creator", fields: [creatorId], references: [id])
+
+  approverId   String?
+  approver      User?   @relation("Approver", fields: [approverId], references: [id])
+
+  status      RequestStatus  @default(NHAP)
+  rejectReason  String?      @db.Text
+
+  replenishForId  String?
+  replenishFor    PaymentRequest? @relation("Replenish", fields: [replenishForId], references: [id])
+  replenishedBy   PaymentRequest[]  @relation("Replenish")
+
+  version   Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoiceLinks  InvoiceLink[]
+  attachments   Attachment[]
+  watchers      RequestWatcher[]
+  comments      Comment[]
+  changeLogs    ChangeLog[]
+  notifications Notification[]
+
+  @@index([siteId, status])  
+  @@index([creatorId])
+  @@index([approverId])
+  @@index([dueDate])
+  @@index([replenishForId])
+  @@map("payment_requests")
+}
+
+model InvoiceLink{
+  id  String @id @default(cuid())
+  requestId String
+
+  url       String @db.VarChar(500)
+  position  Int
+
+  request PaymentRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@map("invoice_links")
+}
+
+model Attachment{
+  id  String @id @default(cuid())
+  requestId String
+  type      AttachmentType
+
+  originalName String
+  storageKey    String
+
+
+  mimeType  String
+  sizeBytes Int 
+  
+  uploadedById String
+  uploadedAt    DateTime @default(now())
+
+  request   PaymentRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  uploadBy  User             @relation(fields: [uploadedById],references: [id])
+
+  @@index([requestId])
+  @@map("attachments")
+}
+
+model RequestWatcher{
+  id    String @id @default(cuid())
+  requestId String
+  userId  String
+
+  request  PaymentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id])
+
+  @@unique([requestId, userId])
+  @@map("request_watchers")
+}
+
+model Comment {
+  id  String  @id @default(cuid())
+  requestId String
+  authorId  String
+  content   String @db.VarChar(2000)
+  createdAt DateTime @default(now())
+
+  request PaymentRequest  @relation(fields: [requestId], references: [id],onDelete: Cascade)
+  author  User            @relation(fields: [authorId], references: [id])
+
+
+  @@index([requestId, createdAt])
+  @@map("comments")
+}
+
+model ChangeLog{
+  id      String      @id @default(cuid())
+  requestId String
+  action  ChangeLogAction
+  actorId String
+
+  fromStatus  RequestStatus?
+  toStatus    RequestStatus?
+  note        String?   @db.Text
+
+  createdAt DateTime @default(now())
+
+  request PaymentRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  actor   User            @relation(fields: [actorId], references: [id])
+
+  @@index([requestId, createdAt])
+  @@map("change_logs")
+
+}
+
+model Notification{
+  id  String      @id @default(cuid())
+  userId  String
+  type  NotificationType
+
+  requestId   String?
+  isRead    Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  request PaymentRequest?   @relation(fields: [requestId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
