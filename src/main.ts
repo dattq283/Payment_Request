@@ -1,3 +1,4 @@
+import { IsNotEmpty } from 'class-validator';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -10,15 +11,15 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Hệ thống quản lý đề nghị thanh toán')
-    .setDescription('API quản lý đề nghị thanh toán nội bộ: tạo, duyệt và thanh toán.')
-    .setVersion('0.1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-      }
+    .setDescription(
+      'API quản lý đề nghị thanh toán nội bộ: tạo, duyệt và thanh toán.',
     )
+    .setVersion('0.1.0')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    })
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
@@ -27,10 +28,23 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      exceptionFactory: (errors) =>
-        new BusinessException('ERR-101', undefined, {
-          fields: errors.map((x) => x.property),
-        }),
+      exceptionFactory: (errors) => {
+        const extra = errors.filter((e) => e.constraints?.whitelistValidation);
+        if (extra.length > 0) {
+          return new BusinessException('ERR-100', undefined, {
+            fields: extra.map((e) => e.property),
+          });
+        }
+        const missing = errors.filter((e) => e.constraints?.IsNotEmpty);
+        if(missing.length > 0){
+          return new BusinessException('ERR-101', undefined, {
+            fields: errors.map((e) => e.property),
+        });
+        } 
+          return new BusinessException('ERR-107', undefined, {
+            fields: errors.map((e) => e.property)
+          });
+      },
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
