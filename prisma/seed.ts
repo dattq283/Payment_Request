@@ -1,7 +1,10 @@
 import 'dotenv/config';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import {
+    Currency,
+    Prisma,
   PrismaClient,
+  RequestStatus,
   Role,
   SiteCode,
 } from '../src/generated/prisma/client';
@@ -131,8 +134,154 @@ async function main() {
     create:{userId: admin.id,siteId: HaNoi.id, role: Role.ADMIN},
   });
   console.log('users:', await prisma.user.count());
+
+
+  const CREATED_AT = new Date('2026-07-20');
+
+  type SeedRequest = Prisma.PaymentRequestUncheckedCreateInput & { id: string };
+
+  const requests: SeedRequest[] = [
+    {
+      id: 'seed-01', code: 'ĐNTT-2026-0001', siteId: HaNoi.id,
+      title: 'Thanh toán cọc 50% tiền in Sale kit và bìa thư A5 Việt Tín',
+      amount: 3202200, currency: Currency.VND,
+      paymentContent: 'Thanh toán cọc 50% tiền in Sale kit và bìa thư A5',
+      bankName: 'VietinBank', bankAccount: '1050 2233 8891',
+      recipientName: 'Công ty TNHH In ấn Sao Việt',
+      dueDate: new Date('2026-09-07'), status: RequestStatus.KHOI_TAO,
+      creatorId: nguoiTao.id, approverId: truongPhong.id,
+    },
+    {
+      id: 'seed-02', code: 'ĐNTT-2026-0002', siteId: HaNoi.id,
+      title: 'Thanh toán chuyển phát hồ sơ tháng 8/2026',
+      amount: 1042002, currency: Currency.VND,
+      paymentContent: 'Chi phí chuyển phát nhanh hồ sơ chi nhánh',
+      bankName: 'Techcombank', bankAccount: '1903 4455 0012',
+      recipientName: 'Công ty CP Chuyển phát Nhanh Bắc Việt',
+      dueDate: new Date('2026-09-14'), status: RequestStatus.KHOI_TAO,
+      creatorId: truongPhong.id, approverId: BGD.id,
+    },
+    {
+      id: 'seed-03', code: 'ĐNTT-2026-0003', siteId: HaNoi.id,
+      title: 'Đề nghị thanh toán hành chính phí quý III',
+      amount: 787748, currency: Currency.VND,
+      paymentContent: 'Đề nghị thanh toán hành chính phí quý III/2026',
+      bankName: 'VietinBank', bankAccount: '1050 8877 2210',
+      recipientName: 'Công ty TNHH Dịch vụ Hành chính An Phát',
+      dueDate: new Date('2026-08-28'), status: RequestStatus.BGD_DUYET,
+      creatorId: nguoiTao.id, approverId: truongPhong.id,
+    },
+    {
+      id: 'seed-04', code: 'ĐNTT-2026-0004', siteId: HaNoi.id,
+      title: 'Chi phí ngoại giao đối tác Singapore',
+      amount: 4800, currency: Currency.USD,
+      paymentContent: 'Chi phí ngoại giao, vé máy bay đối tác',
+      bankName: 'HSBC', bankAccount: '0071 2233 4455',
+      recipientName: 'Pacific Partners Pte. Ltd.',
+      dueDate: new Date('2026-09-20'), status: RequestStatus.BGD_DUYET,
+      creatorId: truongPhong.id, approverId: BGD.id,
+    },
+    {
+      id: 'seed-05', code: 'ĐNTT-2026-0005', siteId: HaNoi.id,
+      title: 'Thanh toán linh kiện máy tính khối kỹ thuật',
+      amount: 25400000, currency: Currency.VND,
+      paymentContent: 'Linh kiện máy tính, thay thế 12 máy trạm',
+      bankName: 'MB Bank', bankAccount: '0031 9988 7766',
+      recipientName: 'Công ty CP Máy tính Hà Nội',
+      dueDate: new Date('2026-10-10'), status: RequestStatus.KT_XU_LY,
+      creatorId: nguoiTao.id, approverId: BGD.id,
+    },
+    {
+      id: 'seed-06', code: 'ĐNTT-2026-0006', siteId: HaNoi.id,
+      title: 'Tạm ứng công tác Thái Nguyên tháng 9',
+      amount: 12500000, currency: Currency.VND,
+      paymentContent: 'Tạm ứng công tác, chờ bổ sung hoá đơn khách sạn',
+      bankName: 'VietinBank', bankAccount: '1050 1122 3344',
+      recipientName: 'Nguyễn Văn An',
+      dueDate: new Date('2026-09-18'), status: RequestStatus.DA_CK_CHO_BO_SUNG,
+      creatorId: nguoiTao.id, approverId: truongPhong.id,
+    },
+    {
+      id: 'seed-07', code: 'ĐNTT-2026-0007', siteId: HaNoi.id,
+      title: 'Nộp tiền thuế sử dụng đất phi nông nghiệp 320CMT8',
+      amount: 1042002, currency: Currency.VND,
+      paymentContent: 'Nộp thuế SDĐ phi nông nghiệp kỳ 2/2026',
+      bankName: 'Kho bạc Nhà nước', bankAccount: '7111 0000 1234',
+      recipientName: 'Kho bạc Nhà nước quận 3',
+      dueDate: new Date('2026-09-14'), status: RequestStatus.DA_THANH_TOAN,
+      creatorId: truongPhong.id, approverId: BGD.id,
+    },
+    {
+      id: 'seed-08', code: 'ĐNTT-2026-0008', siteId: HaNoi.id,
+      title: 'Thanh toán dịch vụ vệ sinh văn phòng tháng 7',
+      amount: 8600000, currency: Currency.VND,
+      paymentContent: 'Dịch vụ vệ sinh văn phòng tháng 7/2026',
+      bankName: 'ACB', bankAccount: '2288 4455 9900',
+      recipientName: 'Công ty TNHH Vệ sinh Công nghiệp Xanh',
+      dueDate: new Date('2026-08-05'), status: RequestStatus.DA_IN_PDF,
+      creatorId: nguoiTao.id, approverId: truongPhong.id,
+    },
+    {
+      id: 'seed-09', code: 'ĐNTT-2026-0009', siteId: HaNoi.id,
+      title: 'Đề nghị mua 5 màn hình phụ cho phòng kinh doanh',
+      amount: 14750000, currency: Currency.VND,
+      paymentContent: 'Mua 5 màn hình 27 inch cho phòng kinh doanh',
+      bankName: 'VPBank', bankAccount: '0455 7788 1122',
+      recipientName: 'Công ty CP Thế giới Số',
+      dueDate: new Date('2026-09-21'), status: RequestStatus.BGD_TU_CHOI,
+      rejectReason: 'Phòng kinh doanh đã được cấp màn hình trong quý II, đề nghị rà soát lại nhu cầu.',
+      creatorId: nguoiTao.id, approverId: BGD.id,
+    },
+
+    // ---- Kiểm phân quyền ----
+    {
+      // Nháp của Người tạo — chỉ chính họ thấy
+      id: 'seed-10', siteId: HaNoi.id,
+      title: 'Mua văn phòng phẩm tháng 10',
+      amount: 2350000, currency: Currency.VND,
+      paymentContent: 'Giấy in, bút, sổ ghi chép cho phòng hành chính',
+      bankName: 'Vietcombank', bankAccount: '0011 2233 4455',
+      recipientName: 'Công ty TNHH Văn phòng phẩm Hồng Hà',
+      dueDate: new Date('2026-10-15'), status: RequestStatus.NHAP,
+      creatorId: nguoiTao.id,
+    },
+    {
+      // Nháp của Trưởng phòng — Admin cũng không được thấy
+      id: 'seed-11', siteId: HaNoi.id,
+      title: 'Thuê hội trường họp tổng kết quý IV',
+      amount: 18000000, currency: Currency.VND,
+      paymentContent: 'Thuê hội trường và âm thanh cho buổi họp tổng kết',
+      bankName: 'BIDV', bankAccount: '2150 1234 5678',
+      recipientName: 'Trung tâm Hội nghị Thăng Long',
+      dueDate: new Date('2026-10-30'), status: RequestStatus.NHAP,
+      creatorId: truongPhong.id,
+    },
+    {
+      // Ở HCM, người duyệt là BGĐ Hà Nội — CỐ Ý sai luật ERR-106 để thử nhánh ②:
+      // BGĐ thấy đề nghị này chỉ vì được chọn duyệt, không phải vì site
+      id: 'seed-12', code: 'ĐNTT-2026-0010', siteId: HoChiMinh.id,
+      title: 'Thanh toán phí bảo trì thang máy chi nhánh HCM',
+      amount: 9800000, currency: Currency.VND,
+      paymentContent: 'Bảo trì định kỳ hệ thống thang máy quý IV',
+      bankName: 'Sacombank', bankAccount: '0600 1122 3344',
+      recipientName: 'Công ty TNHH Thang máy Phương Nam',
+      dueDate: new Date('2026-10-05'), status: RequestStatus.KHOI_TAO,
+      creatorId: keToanThanhToan.id, approverId: BGD.id,
+    },
+  ];
+
+  for (const data of requests) {
+    await prisma.paymentRequest.upsert({
+      where: { id: data.id },
+      update: {},
+      create: { ...data, createdAt: CREATED_AT },
+    });
+  }
+
+  console.log('payment requests:', await prisma.paymentRequest.count());
 }
-main().catch((e)=> {
-    console.error(e);
-    process.exitCode = 1;
-}) .finally(()=>prisma.$disconnect());
+
+main().catch((e) => {
+  console.error(e);
+  process.exitCode = 1;
+}).finally(() => prisma.$disconnect());
