@@ -32,7 +32,7 @@ export class AccessService {
     });
     if (requestExisting > 0) {
       throw new BusinessException('ERR-203');
-    } 
+    }
     throw new NotFoundException();
   }
 }
