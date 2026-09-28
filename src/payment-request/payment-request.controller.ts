@@ -1,9 +1,21 @@
-import { Body, Controller, Get, Param, Req, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Req,
+  Post,
+  Patch,
+  Delete,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { PaymentRequestService } from './payment-request.service';
 import type { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '../auth/jwt.strategy';
 import { CreateDraftDto } from './dto/create-draft.dto';
+import { UpdateDraftDto } from './dto/update-draft.dto';
 
 @Controller('payment-request')
 @ApiTags('Danh sách đề nghị')
@@ -27,5 +39,23 @@ export class PaymentRequestController {
     @Body() dto: CreateDraftDto,
   ) {
     return this.paymentRequestService.createDraft(req.user.id, dto);
+  }
+
+  @Patch(':id')
+  updateDraft(
+    @Param('id') id: string,
+    @Req() req: Request & { user: AuthUser },
+    @Body() dto: UpdateDraftDto,
+  ) {
+    return this.paymentRequestService.updateDraft(req.user.id, id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteDraft(
+    @Param('id') id: string,
+    @Req() req: Request & { user: AuthUser },
+  ) {
+    return this.paymentRequestService.deleteDraft(req.user.id, id);
   }
 }
