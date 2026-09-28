@@ -3,9 +3,9 @@ import { HttpStatus } from '@nestjs/common';
 // Mục 9.4 đặc tả — chỉ gồm mã dùng trong phạm vi 4 tuần.
 // Chưa đưa vào: ERR-401 (trang quản trị), ERR-501/502 (import). ERR-901 là lỗi phía FE.
 export const ERRORS = {
-  'ERR-100':{
+  'ERR-100': {
     status: HttpStatus.BAD_REQUEST,
-    message: "Dữ liệu gửi lên có trường không được phép.",
+    message: 'Dữ liệu gửi lên có trường không được phép.',
   },
   'ERR-101': {
     status: HttpStatus.BAD_REQUEST,
@@ -32,15 +32,15 @@ export const ERRORS = {
     status: HttpStatus.BAD_REQUEST,
     message: 'Người được chọn không có quyền duyệt tại site này.',
   }, // tự thêm
-  'ERR-107':{
+  'ERR-107': {
     status: HttpStatus.BAD_REQUEST,
     message:
-      "Dữ liệu chưa đúng định dạng. Vui lòng kiểm tra các trường được đánh dấu.",
+      'Dữ liệu chưa đúng định dạng. Vui lòng kiểm tra các trường được đánh dấu.',
   },
   'ERR-201': {
     status: HttpStatus.CONFLICT,
     message: 'Không thể chuyển từ {from} sang {to}.',
-  },//tự thêm
+  }, //tự thêm
   'ERR-202': {
     status: HttpStatus.CONFLICT,
     message: 'Đề nghị này vừa được cập nhật. Nội dung đã được tải lại.',

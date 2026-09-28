@@ -4,8 +4,8 @@ import { PaymentRequestController } from './payment-request.controller';
 import { AccessModule } from '../access/access.module';
 
 @Module({
-  imports:[AccessModule],
+  imports: [AccessModule],
   providers: [PaymentRequestService],
-  controllers: [PaymentRequestController]
+  controllers: [PaymentRequestController],
 })
 export class PaymentRequestModule {}

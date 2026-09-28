@@ -6,6 +6,12 @@ import { AccessModule } from './access/access.module';
 import { PaymentRequestModule } from './payment-request/payment-request.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, AccessModule, PaymentRequestModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    AuthModule,
+    AccessModule,
+    PaymentRequestModule,
+  ],
 })
 export class AppModule {}

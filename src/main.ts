@@ -1,6 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { NestFactory } from '@nestjs/core';import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { BusinessException } from './errors/business.exception';
 import { AllExceptionsFilter } from './errors/all-exceptions.filter';
@@ -36,14 +34,14 @@ async function bootstrap() {
           });
         }
         const missing = errors.filter((e) => e.constraints?.IsNotEmpty);
-        if(missing.length > 0){
+        if (missing.length > 0) {
           return new BusinessException('ERR-101', undefined, {
             fields: errors.map((e) => e.property),
-        });
-        } 
-          return new BusinessException('ERR-107', undefined, {
-            fields: errors.map((e) => e.property)
           });
+        }
+        return new BusinessException('ERR-107', undefined, {
+          fields: errors.map((e) => e.property),
+        });
       },
     }),
   );

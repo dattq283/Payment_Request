@@ -4,7 +4,7 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { PrismaService } from '../prisma/prisma.service';
 
-export type AuthUser = {id: string; email: string; name: string};
+export type AuthUser = { id: string; email: string; name: string };
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -35,5 +35,3 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return { id: user.id, email: user.email, name: user.name };
   }
 }
-
-

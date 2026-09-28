@@ -1,114 +1,190 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Hệ thống quản lý Đề nghị thanh toán — Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API cho quy trình tạo, duyệt và thanh toán đề nghị thanh toán nội bộ.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Công nghệ
 
-## Description
+NestJS 12 · Prisma 7.10 · MySQL 8 · TypeScript 6 · JWT
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Yêu cầu môi trường
 
-## Project setup
+- Node.js **24.9 trở lên**
+- MySQL **8** — không dùng MariaDB/XAMPP, vì collation `utf8mb4_0900_ai_ci` chỉ có trên MySQL 8
+
+## Chạy lần đầu
+
+**1. Cài thư viện** — lệnh này tự chạy `prisma generate` để sinh Prisma Client:
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+**2. Tạo database:**
+
+```sql
+CREATE DATABASE PaymentRequest
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
+```
+
+**3. Tạo file `.env`** từ mẫu, rồi điền giá trị (xem mục *Biến môi trường*):
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+**4. Tạo bảng:**
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run db:migrate
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**5. Nạp dữ liệu mẫu** — chạy lại nhiều lần không bị trùng:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run db:seed
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**6. Chạy:**
 
-## Observability
+```bash
+npm run start:dev
+```
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+Tài liệu API (Swagger): http://localhost:3000/api
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+## Biến môi trường
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+| Biến | Ý nghĩa | Ví dụ |
+|---|---|---|
+| `DATABASE_URL` | Chuỗi kết nối MySQL | `mysql://USER:PASSWORD@localhost:3306/PaymentRequest` |
+| `JWT_SECRET` | Bí mật dùng để ký token | Sinh ngẫu nhiên bằng lệnh bên dưới |
+| `JWT_EXPIRES_IN` | Thời hạn token, **tính bằng giây** | `28800` (8 giờ) |
 
-## Resources
 
-Check out a few resources that may come in handy when working with NestJS:
+Thiếu `JWT_SECRET` hoặc `JWT_EXPIRES_IN` không phải số nguyên dương thì app **dừng ngay khi khởi động** kèm thông báo tên biến.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Tài khoản test
 
-## Support
+> ⚠️ Chỉ dùng cho môi trường dev. Mật khẩu chung cho mọi tài khoản: **`123456`**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+| Email | Vai trò | Site |
+|---|---|---|
+| `nguoitao@example.com` | Người tạo | Hà Nội |
+| `truongphong@example.com` | Trưởng phòng | Hà Nội |
+| `bgd@example.com` | Ban Giám đốc | Hà Nội |
+| `ketoanthanhtoan@example.com` | Kế toán thanh toán | Hà Nội, Hồ Chí Minh |
+| `ketoantonghop@example.com` | Kế toán tổng hợp | Hà Nội |
+| `ketoantruong@example.com` | Kế toán trưởng | Hà Nội |
+| `nguoixem@example.com` | Người xem | Hà Nội |
+| `admin@example.com` | Admin | Hà Nội |
+| `chuagansite@example.com` | *Chưa gán vai trò nào* | — |
+| `nghiviec@example.com` | *Đã vô hiệu hoá — không đăng nhập được* | — |
 
-## Stay in touch
+Dữ liệu mẫu còn có **12 đề nghị thanh toán**: 9 đề nghị ở Hà Nội trải đủ 8 trạng thái, 2 bản nháp, và 1 đề nghị ở Hồ Chí Minh.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Sử dụng API
 
-## License
+**Đăng nhập** — `POST /auth/login`:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```json
+{ "email": "nguoitao@example.com", "password": "123456" }
+```
+
+Nhận về `accessToken`, hiệu lực 8 giờ.
+
+**Gọi API cần đăng nhập** — gửi kèm header:
+
+```
+Authorization: Bearer <accessToken>
+```
+
+Trên Swagger: bấm nút **Authorize**, dán **chỉ chuỗi token** (không gõ chữ `Bearer` — Swagger tự thêm). Mỗi lần đổi tài khoản phải Authorize lại bằng token mới.
+
+| Endpoint | Cần đăng nhập | Làm gì |
+|---|---|---|
+| `POST /auth/login` | Không | Đăng nhập, nhận token |
+| `GET /auth/me` | Có | Thông tin người đang đăng nhập |
+| `GET /payment-request` | Có | Danh sách đề nghị mà người đang đăng nhập được xem |
+
+Tài khoản bị vô hiệu hoá sẽ bị từ chối ngay ở request kế tiếp, kể cả khi token vẫn còn hạn.
+
+## Phân quyền xem
+
+Mỗi người chỉ thấy những đề nghị thoả **ít nhất một** điều kiện:
+
+| Điều kiện | Áp dụng cho |
+|---|---|
+| Do mình tạo — kể cả bản nháp | Mọi người |
+| Mình được chọn làm người duyệt | Mọi người |
+| Thuộc site mà mình có vai trò xem cả site | Trưởng phòng, Ban Giám đốc, các vai trò Kế toán, Người xem |
+
+- **Bản nháp chỉ người tạo thấy** — kể cả Admin cũng không thấy nháp của người khác
+- **Admin** thấy mọi đề nghị ở mọi site, trừ nháp của người khác
+- Vai trò được **đọc lại từ database ở mỗi request** chứ không lưu trong token, nên thu hồi quyền có hiệu lực ngay
+
+Toàn bộ luật nằm trong một hàm: `src/access/build-scope.ts`. Hàm nhận id người dùng và danh sách vai trò, trả về điều kiện `where` cho Prisma.
+
+### Vì sao viết tay mà không dùng CASL
+
+- **Luật xem chỉ có ba nhánh** như bảng trên — một hàm là đủ, không cần thêm thư viện
+- **Luồng duyệt của hệ thống là chuyển trạng thái** ("từ trạng thái A sang B, ai làm, cần điều kiện gì"). CASL mô tả tốt "ai được làm gì với đối tượng nào", nhưng không mô tả được "từ A sang B" — dùng CASL thì phần chuyển trạng thái vẫn phải viết riêng
+- **CASL với Prisma 7** phải viết thêm lớp bọc, vì CASL đọc kiểu từ `@prisma/client`, còn Prisma 7 sinh kiểu vào thư mục riêng của project
+- **Dễ kiểm và gỡ lỗi:** `buildScope` là hàm thuần, test không cần database; muốn biết vì sao một người thấy được gì, chỉ cần in kết quả của nó ra
+
+Nếu sau này có nhiều loại dữ liệu cùng cần phân quyền theo hành động, gom luật về một chỗ bằng CASL có thể đáng cân nhắc lại.
+
+## Định dạng lỗi
+
+Lỗi do hệ thống chủ động trả về có dạng:
+
+```json
+{ "code": "ERR-101", "message": "Vui lòng điền các trường còn thiếu được đánh dấu.", "details": { "fields": ["password"] } }
+```
+
+| Mã | Khi nào |
+|---|---|
+| `ERR-100` | Gửi lên trường không được phép |
+| `ERR-101` | Thiếu trường bắt buộc |
+| `ERR-107` | Trường sai định dạng (ví dụ email không hợp lệ) |
+| `ERR-900` | Lỗi hệ thống — kèm **mã tra cứu**; chi tiết lỗi chỉ ghi trong log server |
+
+`details.fields` cho biết những trường nào gặp lỗi.
+
+Lỗi `401` (chưa đăng nhập, token sai hoặc hết hạn, sai email/mật khẩu) trả về theo dạng mặc định của NestJS.
+
+## Lệnh thường dùng
+
+| Lệnh | Làm gì |
+|---|---|
+| `npm run start:dev` | Chạy, tự tải lại khi sửa code trong `src/` |
+| `npm run build` | Build ra `dist/` |
+| `npm run db:migrate` | Áp các migration vào database |
+| `npm run db:seed` | Nạp dữ liệu mẫu |
+| `npm test` | Chạy test |
+| `npm run lint` | Kiểm lỗi code |
+| `npm run format` | Định dạng code |
+
+Sửa `.env` thì phải **dừng hẳn và chạy lại** app — `start:dev` không theo dõi file này.
+
+## Cấu trúc thư mục
+
+```
+prisma/
+├── schema.prisma        mô hình dữ liệu
+├── migrations/          lịch sử thay đổi cấu trúc database
+└── seed.ts              dữ liệu mẫu
+src/
+├── main.ts              khởi động app: Swagger, kiểm dữ liệu đầu vào, xử lý lỗi
+├── errors/              mã lỗi và bộ xử lý lỗi dùng chung
+├── prisma/              kết nối database
+├── auth/                đăng nhập, kiểm token
+├── access/              phân quyền xem
+├── payment-request/     đề nghị thanh toán
+└── generated/           Prisma Client (tự sinh, không commit)
+```
+
+## Lỗi hay gặp
+
+- **`npx prisma` chạy ra sai phiên bản** — nếu máy có cài Prisma toàn cục bản khác, `npx` có thể gọi nhầm. Luôn dùng các lệnh `npm run db:*` ở trên
+- **Test báo lỗi nạp ES Module** — chạy qua `npm test`, không gọi `npx jest` trực tiếp; kiểm Node đủ 24.9 trở lên

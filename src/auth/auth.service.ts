@@ -21,11 +21,14 @@ export class AuthService {
     if (!user || !user.isActive) {
       throw new UnauthorizedException(LOGIN_FAIL);
     }
-    const isValidPassword = await bcrypt.compare(dto.password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
     if (!isValidPassword) {
-        throw new UnauthorizedException(LOGIN_FAIL);
+      throw new UnauthorizedException(LOGIN_FAIL);
     }
-    const accessToken = await this.jwt.signAsync({sub: user.id});
-    return {accessToken}
+    const accessToken = await this.jwt.signAsync({ sub: user.id });
+    return { accessToken };
   }
 }
