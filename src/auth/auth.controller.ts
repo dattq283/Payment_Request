@@ -6,15 +6,14 @@ import {
   HttpStatus,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
 import { AccessService } from '../access/access.service';
-import { AuthUser } from './jwt.strategy';
+import type { AuthUser } from './jwt.strategy';
+import { Public } from './public.decorator';
 
 @Controller('auth')
 @ApiTags('Xác thực')
@@ -24,6 +23,7 @@ export class AuthController {
     private readonly access: AccessService,
   ) {}
 
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
@@ -31,7 +31,6 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   async me(@Req() req: Request & { user: AuthUser }) {
     const roles = await this.access.getRoles(req.user.id);

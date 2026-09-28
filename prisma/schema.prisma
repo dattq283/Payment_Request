@@ -125,14 +125,14 @@ model PaymentRequest{
   code  String? @unique
   siteId String
   site  Site    @relation(fields: [siteId], references: [id])
-  title String
-  amount Decimal  @db.Decimal(18,2)
-  currency  Currency
-  paymentContent String  @db.Text
-  bankName  String
-  bankAccount  String
-  recipientName String
-  dueDate   DateTime
+  title String?
+  amount Decimal?  @db.Decimal(18,2)
+  currency  Currency @default(VND)
+  paymentContent String?  @db.Text
+  bankName  String?
+  bankAccount  String?
+  recipientName String?
+  dueDate   DateTime?
 
   creatorId   String
   creator     User    @relation("Creator", fields: [creatorId], references: [id])
