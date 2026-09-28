@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { SiteRole } from './build-scope';
+import { buildScope, type SiteRole } from './build-scope';
+import { BusinessException } from '../errors/business.exception';
 
 @Injectable()
 export class AccessService {
@@ -12,5 +13,26 @@ export class AccessService {
       },
       select: { siteId: true, role: true },
     });
+  }
+
+  //Lấy đề nghị nếu user được phép xem:
+  async findVisibleOrThrow(
+    userId: string,
+    roles: SiteRole[],
+    requestId: string,
+  ) {
+    const request = await this.prisma.paymentRequest.findFirst({
+      where: {
+        AND: [{ id: requestId }, buildScope(userId, roles)],
+      },
+    });
+    if (request) return request;
+    const requestExisting = await this.prisma.paymentRequest.count({
+      where: { id: requestId },
+    });
+    if (requestExisting > 0) {
+      throw new BusinessException('ERR-203');
+    } 
+    throw new NotFoundException();
   }
 }

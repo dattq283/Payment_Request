@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Param, Req } from '@nestjs/common';
 import { PaymentRequestService } from './payment-request.service';
 import type { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -13,5 +13,13 @@ export class PaymentRequestController {
   @Get()
   list(@Req() req: Request & { user: AuthUser }) {
     return this.paymentRequestService.list(req.user.id);
+  }
+
+  @Get(':id')
+  detail(
+    @Param('id') id: string,
+    @Req() req: Request & { user: AuthUser },
+  ) {
+    return this.paymentRequestService.detail(req.user.id, id);
   }
 }
