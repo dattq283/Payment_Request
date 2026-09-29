@@ -132,7 +132,7 @@ model PaymentRequest{
   bankName  String?
   bankAccount  String?
   recipientName String?
-  dueDate   DateTime?
+  dueDate   DateTime? @db.Date
 
   creatorId   String
   creator     User    @relation("Creator", fields: [creatorId], references: [id])
