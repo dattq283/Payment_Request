@@ -2,7 +2,15 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { buildScope, type SiteRole } from './build-scope';
 import { BusinessException } from '../errors/business.exception';
+import { Role } from '../generated/prisma/enums';
 
+const APPROVER_ROLES: Role[] = [
+  Role.TRUONG_PHONG,
+  Role.BGD,
+  Role.KT_TONG_HOP,
+  Role.KT_THANH_TOAN,
+  Role.KT_TRUONG,
+];
 @Injectable()
 export class AccessService {
   constructor(private readonly prisma: PrismaService) {}
@@ -15,7 +23,7 @@ export class AccessService {
     });
   }
 
-  //Lấy đề nghị nếu user được phép xem:
+  /** Lấy đề nghị nếu user được phép xem */
   async findVisibleOrThrow(
     userId: string,
     roles: SiteRole[],
@@ -34,5 +42,17 @@ export class AccessService {
       throw new BusinessException('ERR-203');
     }
     throw new NotFoundException();
+  }
+
+  /** Check có được chọn làm người duyệt ở site này?*/
+  async isValidApprover(approverId: string, siteId: string): Promise<boolean> {
+    const count = await this.prisma.user.count({
+      where: {
+        id: approverId,
+        isActive: true,
+        siteRoles: { some: { siteId, role: { in: APPROVER_ROLES } } },
+      },
+    });
+    return count > 0;
   }
 }

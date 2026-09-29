@@ -58,4 +58,10 @@ export class PaymentRequestController {
   ) {
     return this.paymentRequestService.deleteDraft(req.user.id, id);
   }
+
+  @Post(':id/submit')
+  @HttpCode(HttpStatus.OK)
+  submit(@Param('id') id: string, @Req() req: Request & { user: AuthUser }) {
+    return this.paymentRequestService.submit(req.user.id, id);
+  }
 }
