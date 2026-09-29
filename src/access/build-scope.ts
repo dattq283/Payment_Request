@@ -31,6 +31,7 @@ export function buildScope(
       { creatorId: userId },
       { approverId: userId, ...notDraft },
       { siteId: { in: siteIds }, ...notDraft },
+      { watchers: { some: { userId } }, ...notDraft },
     ],
   };
 }

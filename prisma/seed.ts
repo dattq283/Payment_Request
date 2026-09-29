@@ -279,6 +279,18 @@ async function main() {
   }
 
   console.log('payment requests:', await prisma.paymentRequest.count());
+  const watchers = [
+    { requestId: 'seed-12', userId: nguoiTao.id }, // ở HCM — xem được nhờ theo dõi dù khác site
+    { requestId: 'seed-11', userId: nguoiTao.id }, // nháp — theo dõi vẫn không thấy (BR-17)
+  ];
+
+  for (const w of watchers) {
+    await prisma.requestWatcher.upsert({
+      where: { requestId_userId: w },
+      update: {},
+      create: w,
+    });
+  }
 }
 
 main().catch((e) => {
