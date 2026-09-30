@@ -16,6 +16,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '../auth/jwt.strategy';
 import { CreateDraftDto } from './dto/create-draft.dto';
 import { UpdateDraftDto } from './dto/update-draft.dto';
+import { TransitionDto } from './dto/transition.dto';
 
 @Controller('payment-request')
 @ApiTags('Danh sách đề nghị')
@@ -63,5 +64,15 @@ export class PaymentRequestController {
   @HttpCode(HttpStatus.OK)
   submit(@Param('id') id: string, @Req() req: Request & { user: AuthUser }) {
     return this.paymentRequestService.submit(req.user.id, id);
+  }
+
+  @Post(':id/transition')
+  @HttpCode(HttpStatus.OK)
+  transition(
+    @Param('id') id: string,
+    @Req() req: Request & { user: AuthUser },
+    @Body() dto: TransitionDto,
+  ) {
+    return this.paymentRequestService.transition(req.user.id, id, dto);
   }
 }

@@ -10,7 +10,7 @@ export const ERRORS = {
   'ERR-101': {
     status: HttpStatus.BAD_REQUEST,
     message: 'Vui lòng điền các trường còn thiếu được đánh dấu.',
-  },
+  }, //Tự thêm
   'ERR-102': {
     status: HttpStatus.BAD_REQUEST,
     message: 'Số tiền phải lớn hơn 0.',
@@ -36,11 +36,11 @@ export const ERRORS = {
     status: HttpStatus.BAD_REQUEST,
     message:
       'Dữ liệu chưa đúng định dạng. Vui lòng kiểm tra các trường được đánh dấu.',
-  },
+  },//Tự thêm
   'ERR-201': {
     status: HttpStatus.CONFLICT,
     message: 'Không thể chuyển từ {from} sang {to}.',
-  }, //tự thêm
+  },
   'ERR-202': {
     status: HttpStatus.CONFLICT,
     message: 'Đề nghị này vừa được cập nhật. Nội dung đã được tải lại.',

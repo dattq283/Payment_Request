@@ -3,13 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccessService } from '../access/access.service';
 import { buildScope } from '../access/build-scope';
-import { canCreate, canEditDraft } from '../access/policies';
+import { canCreate, canPerform, canEditDraft } from '../access/policies';
 import { BusinessException } from '../errors/business.exception';
 import { UpdateDraftDto } from './dto/update-draft.dto';
 import { toBusinessDate } from '../utils/business-date';
 import { checkSubmit } from './submit-rules';
 import { RequestStatus } from '../generated/prisma/enums';
-import { Prisma } from '../generated/prisma/client';
+import { TransitionDto } from './dto/transition.dto';
+import { findTransition,STATUS_LABEL  } from './transitions';
 @Injectable()
 export class PaymentRequestService {
   constructor(
@@ -89,12 +90,14 @@ export class PaymentRequestService {
     });
   }
   //check xem khi có approverId được gửi thì người đó phải tồn tại
-  private async ensureApproverExists(approverId: string | undefined, creatorId: string) {
+  private async ensureApproverExists(
+    approverId: string | undefined,
+    creatorId: string,
+  ) {
     if (!approverId) {
       return;
     }
-    if(approverId === creatorId) 
-      throw new BusinessException('ERR-105');
+    if (approverId === creatorId) throw new BusinessException('ERR-105');
     const count = await this.prisma.user.count({ where: { id: approverId } });
     if (count === 0) {
       throw new BusinessException('ERR-106');
@@ -141,6 +144,41 @@ export class PaymentRequestService {
     return this.prisma.paymentRequest.update({
       where: { id, status: RequestStatus.NHAP },
       data: { code: await this.nextCode(), status: RequestStatus.KHOI_TAO },
+    });
+  }
+
+  /** Chuyển trạng thái */
+  async transition(userId: string, id: string, dto: TransitionDto) {
+    const roles = await this.access.getRoles(userId);
+    const request = await this.access.findVisibleOrThrow(userId, roles, id);
+
+    const transition = findTransition(request.status, dto.to);
+    if (!transition) {
+      throw new BusinessException('ERR-201', {
+        from: STATUS_LABEL[request.status],
+        to: STATUS_LABEL[dto.to],
+      });
+    }
+
+    if (!canPerform(userId, roles, request, transition.actor)) {
+      throw new BusinessException('ERR-203');
+    }
+
+    //  BR-08 (lý do từ chối ≥ 10 ký tự), BR-09 (chứng từ thiếu)
+    const note = dto.note?.trim() ?? '';
+    if (transition.note && note === '') {
+      throw new BusinessException('ERR-101', undefined, { fields: ['note'] });
+    }
+    if (transition.note === 'LY_DO_TU_CHOI' && note.length < 10) {
+      throw new BusinessException('ERR-107', undefined, { fields: ['note'] });
+    }
+
+    return this.prisma.paymentRequest.update({
+      where: { id, status: request.status },
+      data: {
+        status: dto.to,
+        rejectReason: transition.note === 'LY_DO_TU_CHOI' ? note : undefined,
+      },
     });
   }
 }
