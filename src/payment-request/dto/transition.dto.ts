@@ -1,4 +1,10 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { RequestStatus } from '../../generated/prisma/enums';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -15,4 +21,10 @@ export class TransitionDto {
   @IsOptional()
   @IsString()
   note?: string;
+
+  //Thêm version cho mỗi lần đề nghị bị thay đổi: chặn race condition: hai người bấm duyệt/từ chối cùng 1 lúc
+  @ApiProperty({ example: 0 })
+  @IsNotEmpty()
+  @IsInt()
+  version!: number;
 }

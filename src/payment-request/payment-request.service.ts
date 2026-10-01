@@ -10,7 +10,7 @@ import { toBusinessDate } from '../utils/business-date';
 import { checkSubmit } from './submit-rules';
 import { RequestStatus } from '../generated/prisma/enums';
 import { TransitionDto } from './dto/transition.dto';
-import { findTransition,STATUS_LABEL  } from './transitions';
+import { findTransition, STATUS_LABEL } from './transitions';
 @Injectable()
 export class PaymentRequestService {
   constructor(
@@ -70,6 +70,7 @@ export class PaymentRequestService {
       data: {
         ...dto,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : dto.dueDate,
+        version: { increment: 1 },
       },
     });
   }
@@ -143,7 +144,11 @@ export class PaymentRequestService {
 
     return this.prisma.paymentRequest.update({
       where: { id, status: RequestStatus.NHAP },
-      data: { code: await this.nextCode(), status: RequestStatus.KHOI_TAO },
+      data: {
+        code: await this.nextCode(),
+        status: RequestStatus.KHOI_TAO,
+        version: { increment: 1 },
+      },
     });
   }
 
@@ -151,7 +156,7 @@ export class PaymentRequestService {
   async transition(userId: string, id: string, dto: TransitionDto) {
     const roles = await this.access.getRoles(userId);
     const request = await this.access.findVisibleOrThrow(userId, roles, id);
-
+    if (dto.version !== request.version) throw new BusinessException('ERR-202');
     const transition = findTransition(request.status, dto.to);
     if (!transition) {
       throw new BusinessException('ERR-201', {
@@ -174,10 +179,11 @@ export class PaymentRequestService {
     }
 
     return this.prisma.paymentRequest.update({
-      where: { id, status: request.status },
+      where: { id, version: dto.version },
       data: {
         status: dto.to,
         rejectReason: transition.note === 'LY_DO_TU_CHOI' ? note : undefined,
+        version: { increment: 1 },
       },
     });
   }

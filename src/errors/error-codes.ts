@@ -36,7 +36,7 @@ export const ERRORS = {
     status: HttpStatus.BAD_REQUEST,
     message:
       'Dữ liệu chưa đúng định dạng. Vui lòng kiểm tra các trường được đánh dấu.',
-  },//Tự thêm
+  }, //Tự thêm
   'ERR-201': {
     status: HttpStatus.CONFLICT,
     message: 'Không thể chuyển từ {from} sang {to}.',
