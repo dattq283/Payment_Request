@@ -8,7 +8,7 @@ import { BusinessException } from '../errors/business.exception';
 import { UpdateDraftDto } from './dto/update-draft.dto';
 import { toBusinessDate } from '../utils/business-date';
 import { checkSubmit } from './submit-rules';
-import { RequestStatus } from '../generated/prisma/enums';
+import { ChangeLogAction, RequestStatus } from '../generated/prisma/enums';
 import { TransitionDto } from './dto/transition.dto';
 import { findTransition, STATUS_LABEL } from './transitions';
 @Injectable()
@@ -50,6 +50,9 @@ export class PaymentRequestService {
         ...dto,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : dto.dueDate,
         creatorId: userId,
+        changeLogs: {
+          create: { action: ChangeLogAction.CREATED, actorId: userId },
+        },
       },
     });
   }
@@ -142,14 +145,27 @@ export class PaymentRequestService {
     );
     if (!isValid) throw new BusinessException('ERR-106');
 
-    return this.prisma.paymentRequest.update({
-      where: { id, status: RequestStatus.NHAP },
-      data: {
-        code: await this.nextCode(),
-        status: RequestStatus.KHOI_TAO,
-        version: { increment: 1 },
-      },
-    });
+    const code = await this.nextCode();
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.paymentRequest.update({
+        where: { id, status: RequestStatus.NHAP },
+        data: {
+          code,
+          status: RequestStatus.KHOI_TAO,
+          version: { increment: 1 },
+        },
+      }),
+      this.prisma.changeLog.create({
+        data: {
+          requestId: id,
+          actorId: userId,
+          action: ChangeLogAction.SUBMITTED,
+          fromStatus: RequestStatus.NHAP,
+          toStatus: RequestStatus.KHOI_TAO,
+        },
+      }),
+    ]);
+    return updated;
   }
 
   /** Chuyển trạng thái */
@@ -178,13 +194,26 @@ export class PaymentRequestService {
       throw new BusinessException('ERR-107', undefined, { fields: ['note'] });
     }
 
-    return this.prisma.paymentRequest.update({
-      where: { id, version: dto.version },
-      data: {
-        status: dto.to,
-        rejectReason: transition.note === 'LY_DO_TU_CHOI' ? note : undefined,
-        version: { increment: 1 },
-      },
-    });
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.paymentRequest.update({
+        where: { id, version: dto.version },
+        data: {
+          status: dto.to,
+          rejectReason: transition.note === 'LY_DO_TU_CHOI' ? note : undefined,
+          version: { increment: 1 },
+        },
+      }),
+      this.prisma.changeLog.create({
+        data: {
+          requestId: id,
+          actorId: userId,
+          action: ChangeLogAction.STATUS_CHANGED,
+          fromStatus: request.status,
+          toStatus: dto.to,
+          note: note || null,
+        },
+      }),
+    ]);
+    return updated;
   }
 }
