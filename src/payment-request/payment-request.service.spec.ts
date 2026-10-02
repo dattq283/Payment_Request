@@ -3,7 +3,12 @@ import { PaymentRequestService } from './payment-request.service';
 import { BusinessException } from '../errors/business.exception';
 import { toBusinessDate } from '../utils/business-date';
 import { Prisma } from '../generated/prisma/client';
-import { ChangeLogAction, Currency, RequestStatus, Role } from '../generated/prisma/enums';
+import {
+  ChangeLogAction,
+  Currency,
+  RequestStatus,
+  Role,
+} from '../generated/prisma/enums';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { AccessService } from '../access/access.service';
 import type { SiteRole } from '../access/build-scope';
@@ -11,7 +16,7 @@ import type { SiteRole } from '../access/build-scope';
 const S = RequestStatus;
 const YEAR = toBusinessDate(new Date()).slice(0, 4);
 
-// ======================= Dữ liệu mẫu =======================
+//  Dữ liệu mẫu
 
 /** Đề nghị đã gửi duyệt ở Hà Nội: người tạo 'nt', người duyệt 'tp', version 0. */
 function sentRequest(overrides: Record<string, unknown> = {}) {
@@ -100,7 +105,7 @@ async function errorCode(
   }
 }
 
-// ======================= Gửi duyệt =======================
+//  Gửi duyệt
 
 describe('submit — gửi duyệt (Nháp → Khởi tạo)', () => {
   it('Người tạo: gửi nháp hợp lệ - sinh mã kế tiếp, chuyển Khởi tạo (FR-41)', async () => {
@@ -190,10 +195,10 @@ describe('submit — gửi duyệt (Nháp → Khởi tạo)', () => {
   });
 });
 
-// ======================= Chuyển trạng thái =======================
+//  Chuyển trạng thái
 
 describe('transition — chuyển trạng thái (Bảng 3)', () => {
-  // ----- Duyệt -----
+  //Duyệt
 
   it('Người được chỉ định: duyệt Khởi tạo → TP duyệt - version tăng', async () => {
     const { service, update } = setup(
@@ -252,7 +257,7 @@ describe('transition — chuyển trạng thái (Bảng 3)', () => {
     ).toBe('ERR-203');
   });
 
-  // ----- Kế toán -----
+  //Kế toán
 
   it('Người tạo: nhận xử lý kế toán - ERR-203 (Bảng 2)', async () => {
     const { service } = setup(
@@ -317,7 +322,7 @@ describe('transition — chuyển trạng thái (Bảng 3)', () => {
     ).toBe('ERR-101');
   });
 
-  // ----- Từ chối -----
+  //Từ chối
 
   it('Người được chỉ định: từ chối với lý do dưới 10 ký tự - ERR-107 (BR-08)', async () => {
     const { service } = setup(sentRequest(), rolesAt(Role.TRUONG_PHONG));
